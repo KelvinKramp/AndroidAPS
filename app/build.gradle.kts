@@ -96,9 +96,17 @@ fun allCommitted(): Boolean {
 }
 
 android {
-
     namespace = "app.aaps"
     ndkVersion = Versions.ndkVersion
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("../androidaps.keystore")
+            storePassword = System.getenv("SIGNING_STORE_PASSWORD")
+            keyAlias = System.getenv("SIGNING_KEY_ALIAS")
+            keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+        }
+    }
 
     defaultConfig {
         minSdk = Versions.minSdk
@@ -157,6 +165,14 @@ android {
     buildFeatures {
         dataBinding = true
         buildConfig = true
+    }
+
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
     }
 }
 
