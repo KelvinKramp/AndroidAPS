@@ -47,14 +47,17 @@ jobs:
       #     path: app/build/outputs/apk/debug/app-debug.apk
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease
+        run: |
+          mkdir -p app/build/outputs/apk/release
+          ./gradlew assembleRelease --stacktrace --info
         env:
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
-
+      - name: Debug Build Output
+        run: ls -R app/build/outputs/
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: AAPS-Ladybug-Feature-Drop-2024.2.2
+          name: release-apk
           path: app/build/outputs/apk/release/app-release.apk
