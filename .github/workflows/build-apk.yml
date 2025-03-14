@@ -40,10 +40,10 @@ jobs:
       - name: Print Secrets
         run: |
           echo "Available secrets:"
-          echo "KEY_BASE64: ${{ secrets.KEY_BASE64}}"
-          echo "SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS}}"
-          echo "SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD}}"
-          echo "SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD}}"
+          echo "KEY_BASE64: ${{ secrets.KEY_BASE64 != '' && '✓' || '✗' }}"
+          echo "SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS != '' && '✓' || '✗' }}"
+          echo "SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD != '' && '✓' || '✗' }}"
+          echo "SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD != '' && '✓' || '✗' }}"
 
       # - name: Build Debug APK
       #   run: ./gradlew assembleDebug
