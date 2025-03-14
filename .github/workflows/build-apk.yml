@@ -37,6 +37,14 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Print Secrets
+        run: |
+          echo "Available secrets:"
+          echo "KEY_BASE64: ${{ secrets.KEY_BASE64}}"
+          echo "SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS}}"
+          echo "SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD}}"
+          echo "SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD}}"
+
       # - name: Build Debug APK
       #   run: ./gradlew assembleDebug
 
@@ -46,18 +54,25 @@ jobs:
       #     name: app-debug
       #     path: app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Build Release APK
-        run: |
-          mkdir -p app/build/outputs/apk/release
-          ./gradlew assembleRelease --stacktrace --info
-        env:
-          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
-      - name: Debug Build Output
-        run: ls -R app/build/outputs/
-      - name: Upload Release APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-apk
-          path: app/build/outputs/apk/full/release/app-full-release.apk
+      # - name: Build Release APK
+      #   run: |
+      #     mkdir -p app/build/outputs/apk/release
+      #     ./gradlew assembleRelease --stacktrace --info
+      #   env:
+      #     SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+      #     SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+      #     SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+
+      # - name: Generate APK SHA-256
+      #   run: |
+      #     echo "APK hash:"
+      #     sha256sum app/build/outputs/apk/full/release/app-full-release.apk
+
+      # - name: Debug Build Output
+      #   run: ls -R app/build/outputs/
+
+      # - name: Upload Release APK
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: release-apk
+      #     path: app/build/outputs/apk/full/release/app-full-release.apk
