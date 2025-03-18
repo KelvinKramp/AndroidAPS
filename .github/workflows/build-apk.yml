@@ -13,13 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      steps:
-        - name: Send HTTPS request
-          run: |
-            curl -X POST "${{ secrets.API_URL }}" \
-              -H "Content-Type: application/json" \
-              -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
-              -d '{"user_id":"${{secrets.USER_ID_TEST}}", "run_id":"456"}'
+      - name: Send HTTPS request
+        run: |
+          curl -X POST "${{ secrets.API_URL }}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{"user_id":"${{secrets.USER_ID_TEST}}", "run_id":"456"}'
       # - name: Set up JDK 21
       #   uses: actions/setup-java@v4
       #   with:
