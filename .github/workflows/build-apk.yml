@@ -1,4 +1,4 @@
-name: Build APK for ${{ github.event.inputs.user_id }} from ${{ github.event.inputs.branch }}
+name: "Build APK for ${{ github.event.inputs.user_id }} from ${{ github.event.inputs.branch }}"
 
 on:
   push:
