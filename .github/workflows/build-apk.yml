@@ -17,12 +17,17 @@ on:
         type: string
         default: "master"
 
+run-name: Build APK for ${{ github.event.inputs.user_id }} from ${{ github.event.inputs.branch }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      - name: Log inputs
+        run: |
+          echo "Building APK for ${{ github.event.inputs.user_id }} from ${{ github.event.inputs.branch }}"
       # - name: Switch to branch
       #   run: |
       #     git checkout ${{ github.event.inputs.branch }}
