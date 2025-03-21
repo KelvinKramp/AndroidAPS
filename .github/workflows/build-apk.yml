@@ -6,6 +6,16 @@ on:
   pull_request:
     branches: [master]
   workflow_dispatch:
+    inputs:
+      user_id:
+        description: "User ID for API calls"
+        required: true
+        type: string
+      branch:
+        description: "Branch to build from"
+        required: true
+        type: string
+        default: "master"
 
 jobs:
   build:
