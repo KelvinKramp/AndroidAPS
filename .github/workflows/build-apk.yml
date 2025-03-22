@@ -31,8 +31,8 @@ jobs:
             -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}"}'
 
       # Wait 5 minutes
-      - name: Wait 5 minutes
-        run: sleep 300
+      - name: Wait 2 minutes
+        run: sleep 120
 
       # - name: Switch to branch
       #   run: |
@@ -87,12 +87,12 @@ jobs:
       # - name: Debug Build Output
       #   run: ls -R app/build/outputs/
 
-      # - name: Signing off
-      #   run: |
-      #     curl -X POST "${{ secrets.API_URL_SIGNING_OFF }}" \
-      #       -H "Content-Type: application/json" \
-      #       -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
-      #       -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}", "download_url":"https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ github.run_id }}/zip"}'
+      - name: Signing off
+        run: |
+          curl -X POST "${{ secrets.API_URL_SIGNING_OFF }}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}", "download_url":"https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ github.run_id }}/zip"}'
 
       # - name: Send email
       #   run: |
