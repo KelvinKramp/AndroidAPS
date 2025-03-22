@@ -17,17 +17,23 @@ on:
         type: string
         default: "master"
 
-run-name: Build APK for ${{ github.event.inputs.user_id }} from ${{ github.event.inputs.branch }}
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Log inputs
+      - name: Signing on
         run: |
-          echo "Building APK for ${{ github.event.inputs.user_id }} from ${{ github.event.inputs.branch }}"
+          curl -X POST "${{ secrets.API_URL_SIGNING_ON }}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}"}'
+
+      # Wait 5 minutes
+      - name: Wait 5 minutes
+        run: sleep 300
+
       # - name: Switch to branch
       #   run: |
       #     git checkout ${{ github.event.inputs.branch }}
@@ -81,9 +87,9 @@ jobs:
       # - name: Debug Build Output
       #   run: ls -R app/build/outputs/
 
-      # - name: Update file data
+      # - name: Signing off
       #   run: |
-      #     curl -X POST "${{ secrets.API_URL_FILE_READY }}" \
+      #     curl -X POST "${{ secrets.API_URL_SIGNING_OFF }}" \
       #       -H "Content-Type: application/json" \
       #       -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
       #       -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}", "download_url":"https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ github.run_id }}/zip"}'
