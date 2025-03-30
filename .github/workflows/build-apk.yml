@@ -31,6 +31,7 @@ jobs:
       #       -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}"}'
 
       - name: Build Artifact
+      - name: Build Artifact
         run: |
           mkdir -p output
           echo "Sample APK content" > output/apk.apk
@@ -119,6 +120,12 @@ jobs:
       #       -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
       #       -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}", "download_url":"https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ github.run_id }}/zip"}'
 
+      # - name: Send email
+      #   run: |
+      #     curl -X POST "${{ secrets.API_URL_SEND_MAIL }}" \
+      #       -H "Content-Type: application/json" \
+      #       -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+      #       -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}"}'
       # - name: Send email
       #   run: |
       #     curl -X POST "${{ secrets.API_URL_SEND_MAIL }}" \
