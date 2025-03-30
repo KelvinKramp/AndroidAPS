@@ -23,82 +23,105 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Signing on
+      # - name: Signing on
+      #   run: |
+      #     curl -X POST "${{ secrets.API_URL_SIGNING_ON }}" \
+      #       -H "Content-Type: application/json" \
+      #       -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+      #       -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}"}'
+
+      - name: Build Artifact
         run: |
-          curl -X POST "${{ secrets.API_URL_SIGNING_ON }}" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
-            -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}"}'
+          mkdir -p output
+          echo "Sample APK content" > output/apk.apk
 
-      # Wait 5 minutes
-      - name: Wait 2 minutes
-        run: sleep 120
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: "21"
-          distribution: "temurin"
-          cache: gradle
-
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: 8.10
-
-      - name: Decode Keystore
-        run: |
-          echo "${{ secrets.KEY_BASE64 }}" > $GITHUB_WORKSPACE/androidaps.keystore.base64
-          base64 -d $GITHUB_WORKSPACE/androidaps.keystore.base64 > $GITHUB_WORKSPACE/androidaps.keystore
-          rm $GITHUB_WORKSPACE/androidaps.keystore.base64
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Print Availability Secrets
-        run: |
-          echo "Available secrets:"
-          echo "KEY_BASE64: ${{ secrets.KEY_BASE64 != '' && '✓' || '✗' }}"
-          echo "SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS != '' && '✓' || '✗' }}"
-          echo "SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD != '' && '✓' || '✗' }}"
-          echo "SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD != '' && '✓' || '✗' }}"
-
-      - name: Build Release APK
-        run: |
-          mkdir -p app/build/outputs/apk/release
-          ./gradlew assembleRelease --stacktrace --info
-        env:
-          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
-
-      - name: Generate APK SHA-256
-        run: |
-          echo "APK hash:"
-          sha256sum app/build/outputs/apk/full/release/app-full-release.apk
-
-      - name: Debug Build Output
-        run: ls -R app/build/outputs/
-
-      - name: Upload Release APK
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk
-          path: app/build/outputs/apk/full/release/app-full-release.apk
+          name: apk-artifact
+          path: output/apk.apk
+
+      - name: Get Artifact Download URL
+        id: artifact
+        run: |
+          echo "::set-output name=download_url::$(echo ${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}/artifacts)"
 
       - name: Signing off
         run: |
           curl -X POST "${{ secrets.API_URL_SIGNING_OFF }}" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
-            -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}", "download_url":"https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ github.run_id }}/zip"}'
+            -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}", "download_url":"${{ steps.artifact.outputs.download_url }}"}'
 
-      - name: Send email
-        run: |
-          curl -X POST "${{ secrets.API_URL_SEND_MAIL }}" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
-            -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}"}'
+      # Wait 5 minutes
+      # - name: Wait 2 minutes
+      #   run: sleep 120
+
+      # - name: Set up JDK 21
+      #   uses: actions/setup-java@v4
+      #   with:
+      #     java-version: "21"
+      #     distribution: "temurin"
+      #     cache: gradle
+
+      # - name: Setup Gradle
+      #   uses: gradle/gradle-build-action@v2
+      #   with:
+      #     gradle-version: 8.10
+
+      # - name: Decode Keystore
+      #   run: |
+      #     echo "${{ secrets.KEY_BASE64 }}" > $GITHUB_WORKSPACE/androidaps.keystore.base64
+      #     base64 -d $GITHUB_WORKSPACE/androidaps.keystore.base64 > $GITHUB_WORKSPACE/androidaps.keystore
+      #     rm $GITHUB_WORKSPACE/androidaps.keystore.base64
+
+      # - name: Grant execute permission for gradlew
+      #   run: chmod +x gradlew
+
+      # - name: Setup Android SDK
+      #   uses: android-actions/setup-android@v3
+
+      # - name: Print Availability Secrets
+      #   run: |
+      #     echo "Available secrets:"
+      #     echo "KEY_BASE64: ${{ secrets.KEY_BASE64 != '' && '✓' || '✗' }}"
+      #     echo "SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS != '' && '✓' || '✗' }}"
+      #     echo "SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD != '' && '✓' || '✗' }}"
+      #     echo "SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD != '' && '✓' || '✗' }}"
+
+      # - name: Build Release APK
+      #   run: |
+      #     mkdir -p app/build/outputs/apk/release
+      #     ./gradlew assembleRelease --stacktrace --info
+      #   env:
+      #     SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+      #     SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+      #     SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+
+      # - name: Generate APK SHA-256
+      #   run: |
+      #     echo "APK hash:"
+      #     sha256sum app/build/outputs/apk/full/release/app-full-release.apk
+
+      # - name: Debug Build Output
+      #   run: ls -R app/build/outputs/
+
+      # - name: Upload Release APK
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: release-apk
+      #     path: app/build/outputs/apk/full/release/app-full-release.apk
+
+      # - name: Signing off
+      #   run: |
+      #     curl -X POST "${{ secrets.API_URL_SIGNING_OFF }}" \
+      #       -H "Content-Type: application/json" \
+      #       -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+      #       -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}", "download_url":"https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ github.run_id }}/zip"}'
+
+      # - name: Send email
+      #   run: |
+      #     curl -X POST "${{ secrets.API_URL_SEND_MAIL }}" \
+      #       -H "Content-Type: application/json" \
+      #       -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+      #       -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}"}'
