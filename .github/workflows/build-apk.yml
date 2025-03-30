@@ -51,7 +51,7 @@ jobs:
           curl -X POST "${{ secrets.API_URL_SIGNING_OFF }}" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
-            -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}", "download_url":"${{ steps.artifact.outputs.download_url }}"}'
+            -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}", "download_url":"${{ https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ github.run_id }}/zip }}"}'
 
       # Wait 5 minutes
       # - name: Wait 2 minutes
