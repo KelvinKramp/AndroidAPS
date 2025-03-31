@@ -36,22 +36,18 @@ jobs:
           echo "Sample APK content" > output/apk.apk
 
       - name: Upload Artifact
+        id: upload-artifact
         uses: actions/upload-artifact@v4
         with:
           name: apk-artifact
           path: output/apk.apk
-
-      - name: Get Artifact Download URL
-        id: artifact
-        run: |
-          echo "::set-output name=download_url::$(echo ${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}/artifacts)"
 
       - name: Signing off
         run: |
           curl -X POST "${{ secrets.API_URL_SIGNING_OFF }}" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
-            -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}", "download_url":"https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ github.run_id }}/zip"}'
+            -d '{"user_id":"${{ github.event.inputs.user_id }}", "run_id":"${{ github.run_id }}", "download_url":"${{ steps.upload-artifact.outputs.artifact-url }}"}'
 
       # Wait 5 minutes
       # - name: Wait 2 minutes
