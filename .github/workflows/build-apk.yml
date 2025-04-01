@@ -65,7 +65,7 @@ jobs:
       - name: Build Release APK
         run: |
           mkdir -p app/build/outputs/apk/release
-          echo "Test APK" > app/build/outputs/apk/release/app-full-release.apk
+          echo "Test APK" > app/build/outputs/apk/full/release/app-full-release.apk
         #   ./gradlew assembleRelease --stacktrace --info
         # env:
         #   SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
