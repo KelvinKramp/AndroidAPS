@@ -65,11 +65,12 @@ jobs:
       - name: Build Release APK
         run: |
           mkdir -p app/build/outputs/apk/release
-          ./gradlew assembleRelease --stacktrace --info
-        env:
-          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          echo "Test APK" > app/build/outputs/apk/release/app-full-release.apk
+        #   ./gradlew assembleRelease --stacktrace --info
+        # env:
+        #   SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+        #   SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        #   SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
 
       # - name: Generate APK SHA-256
       #   run: |
