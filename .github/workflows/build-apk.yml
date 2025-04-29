@@ -21,9 +21,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # - uses: actions/checkout@v4
 
-      - name: Clean and Clone AndroidAPS Repository
+      - name: Clone AndroidAPS Repository
         run: |
           git clone https://github.com/nightscout/AndroidAPS.git .
           git checkout ${{ github.event.inputs.branch || 'master' }}
