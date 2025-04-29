@@ -23,8 +23,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Clone AndroidAPS Repository
+      - name: Clean and Clone AndroidAPS Repository
         run: |
+          rm -rf .git
           rm -rf *
           git clone https://github.com/nightscout/AndroidAPS.git .
           git checkout ${{ github.event.inputs.branch || 'master' }}
