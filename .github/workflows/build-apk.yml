@@ -21,14 +21,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # - uses: actions/checkout@v4
-
-      - name: Clone AndroidAPS Repository
-        run: |
-          git clone https://github.com/nightscout/AndroidAPS.git .
-          git checkout ${{ github.event.inputs.branch || 'master' }}
-          pwd
-          ls -la
+      - uses: actions/checkout@v4
 
       - name: Signing on
         run: |
@@ -78,7 +71,11 @@ jobs:
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
-          SIGNING_STORE_FILE: $GITHUB_WORKSPACE/androidaps.keystore
+
+      # - name: Generate APK SHA-256
+      #   run: |
+      #     echo "APK hash:"
+      #     sha256sum app/build/outputs/apk/full/release/app-full-release.apk
 
       - name: Debug Build Output
         run: |
@@ -109,3 +106,10 @@ jobs:
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
             -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}"}'
+
+      # - name: Signing off
+      #   run: |
+      #     curl -X POST "${{ secrets.API_URL_SIGNING_OFF }}" \
+      #       -H "Content-Type: application/json" \
+      #       -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+      #       -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}", "download_url":"https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ github.run_id }}/zip"}'
