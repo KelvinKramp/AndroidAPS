@@ -21,10 +21,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Clone AndroidAPS Repository
-        run: |
-          git clone https://github.com/nightscout/AndroidAPS.git .
-          git checkout ${{ github.event.inputs.branch || 'master' }}
+      - name: Checkout another repo
+        uses: actions/checkout@v4
+        with:
+          repository: nightscout/AndroidAPS
 
       - name: Signing on
         run: |
@@ -52,13 +52,6 @@ jobs:
           rm $GITHUB_WORKSPACE/androidaps.keystore.base64
           echo "Keystore location: $GITHUB_WORKSPACE/androidaps.keystore"
           ls -l $GITHUB_WORKSPACE/androidaps.keystore
-
-      - name: Create signing.properties
-        run: |
-          echo "storeFile=$GITHUB_WORKSPACE/androidaps.keystore" >> signing.properties
-          echo "storePassword=${{ secrets.SIGNING_STORE_PASSWORD }}" >> signing.properties
-          echo "keyAlias=${{ secrets.SIGNING_KEY_ALIAS }}" >> signing.properties
-          echo "keyPassword=${{ secrets.SIGNING_KEY_PASSWORD }}" >> signing.properties
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
