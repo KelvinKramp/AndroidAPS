@@ -21,10 +21,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout another repo
+      - name: Checkout your repo (for secrets & keystore)
+        uses: actions/checkout@v4
+
+      - name: Checkout AndroidAPS upstream
         uses: actions/checkout@v4
         with:
           repository: nightscout/AndroidAPS
+          path: AndroidAPS_upstream 
 
       - name: Signing on
         run: |
@@ -47,14 +51,14 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.KEY_BASE64 }}" > $GITHUB_WORKSPACE/androidaps.keystore.base64
-          base64 -d $GITHUB_WORKSPACE/androidaps.keystore.base64 > $GITHUB_WORKSPACE/androidaps.keystore
-          rm $GITHUB_WORKSPACE/androidaps.keystore.base64
-          echo "Keystore location: $GITHUB_WORKSPACE/androidaps.keystore"
-          ls -l $GITHUB_WORKSPACE/androidaps.keystore
+          echo "${{ secrets.KEY_BASE64 }}" > androidaps.keystore.base64
+          base64 -d androidaps.keystore.base64 > androidaps.keystore
+          rm androidaps.keystore.base64
+          # Copy keystore to the upstream repo
+          cp androidaps.keystore AndroidAPS_upstream/androidaps.keystore
 
       - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+        run: chmod +x AndroidAPS_upstream/gradlew
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -69,28 +73,27 @@ jobs:
 
       - name: Build Release APK
         run: |
+          cd AndroidAPS_upstream
           ./gradlew assembleRelease --stacktrace --info
         env:
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
-          SIGNING_STORE_FILE: $GITHUB_WORKSPACE/androidaps.keystore
+          SIGNING_STORE_FILE: $GITHUB_WORKSPACE/AndroidAPS_upstream/androidaps.keystore
 
       - name: Debug Build Output
         run: |
           echo "Current directory:"
           pwd
           echo "Listing build outputs:"
-          ls -R app/build/outputs/
-          echo "Listing app directory:"
-          ls -R app/
+          ls -R AndroidAPS_upstream/app/build/outputs/
 
       - name: Upload Artifact
         id: upload-artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: app/build/outputs/apk/full/release/app-full-release.apk
+          path: AndroidAPS_upstream/app/build/outputs/apk/full/release/app-full-release.apk
 
       - name: Signing off
         run: |
