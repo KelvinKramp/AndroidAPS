@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: nightscout/AndroidAPS
-          path: AndroidAPS_upstream 
+          path: AndroidAPS_upstream
 
       - name: Signing on
         run: |
@@ -67,15 +67,47 @@ jobs:
           echo "SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD != '' && '✓' || '✗' }}"
           echo "SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD != '' && '✓' || '✗' }}"
 
+      - name: Patch build.gradle for Signing
+        run: |
+          cd AndroidAPS_upstream
+          cat >> app/build.gradle << 'EOF'
+
+          android {
+              signingConfigs {
+                  release {
+                      storeFile file("$GITHUB_WORKSPACE/AndroidAPS_upstream/androidaps.keystore")
+                      storePassword "${{ secrets.SIGNING_STORE_PASSWORD }}"
+                      keyAlias "${{ secrets.SIGNING_KEY_ALIAS }}"
+                      keyPassword "${{ secrets.SIGNING_KEY_PASSWORD }}"
+                  }
+              }
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                  }
+              }
+          }
+          EOF
+
       - name: Build Release APK
         run: |
           cd AndroidAPS_upstream
           ./gradlew assembleRelease --stacktrace --info
-        env:
-          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
-          SIGNING_STORE_FILE: $GITHUB_WORKSPACE/AndroidAPS_upstream/androidaps.keystore
+
+      - name: Verify Keystore
+        run: |
+          ls -la AndroidAPS_upstream/androidaps.keystore
+          file AndroidAPS_upstream/androidaps.keystore
+
+      - name: Print Gradle Properties
+        run: |
+          cd AndroidAPS_upstream
+          ./gradlew properties | grep "signing"
+
+      - name: Run Signing Report
+        run: |
+          cd AndroidAPS_upstream
+          ./gradlew signingReport
 
       - name: Debug Build Output
         run: |
