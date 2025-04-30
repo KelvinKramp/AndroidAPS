@@ -27,6 +27,8 @@ jobs:
         run: |
           git clone https://github.com/nightscout/AndroidAPS.git .
           git checkout ${{ github.event.inputs.branch || 'master' }}
+          pwd
+          ls -la
 
       - name: Signing on
         run: |
@@ -52,6 +54,8 @@ jobs:
           echo "${{ secrets.KEY_BASE64 }}" > $GITHUB_WORKSPACE/androidaps.keystore.base64
           base64 -d $GITHUB_WORKSPACE/androidaps.keystore.base64 > $GITHUB_WORKSPACE/androidaps.keystore
           rm $GITHUB_WORKSPACE/androidaps.keystore.base64
+          echo "Keystore location: $GITHUB_WORKSPACE/androidaps.keystore"
+          ls -l $GITHUB_WORKSPACE/androidaps.keystore
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -74,14 +78,16 @@ jobs:
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
-
-      # - name: Generate APK SHA-256
-      #   run: |
-      #     echo "APK hash:"
-      #     sha256sum app/build/outputs/apk/full/release/app-full-release.apk
+          SIGNING_STORE_FILE: $GITHUB_WORKSPACE/androidaps.keystore
 
       - name: Debug Build Output
-        run: ls -R app/build/outputs/
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Listing build outputs:"
+          ls -R app/build/outputs/
+          echo "Listing app directory:"
+          ls -R app/
 
       - name: Upload Artifact
         id: upload-artifact
@@ -103,10 +109,3 @@ jobs:
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
             -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}"}'
-
-      # - name: Signing off
-      #   run: |
-      #     curl -X POST "${{ secrets.API_URL_SIGNING_OFF }}" \
-      #       -H "Content-Type: application/json" \
-      #       -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
-      #       -d '{"user_id":"${{github.event.inputs.user_id}}", "run_id":"${{ github.run_id }}", "download_url":"https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ github.run_id }}/zip"}'
