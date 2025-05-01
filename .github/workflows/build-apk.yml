@@ -70,8 +70,8 @@ jobs:
       - name: Patch build.gradle for Signing
         run: |
           cd AndroidAPS_upstream
-          cat >> app/build.gradle << 'EOF'
-
+          # Create a temporary file with the signing configuration
+          cat > signing_config.gradle << 'EOF'
           android {
               signingConfigs {
                   release {
@@ -88,6 +88,10 @@ jobs:
               }
           }
           EOF
+
+          # Apply the signing configuration
+          sed -i '/android {/r signing_config.gradle' app/build.gradle
+          rm signing_config.gradle
 
       - name: Build Release APK
         run: |
