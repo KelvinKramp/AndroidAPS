@@ -1,6 +1,10 @@
 name: Build APK
 
 on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
   workflow_dispatch:
     inputs:
       user_id:
@@ -17,14 +21,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout your repo (for secrets & keystore)
-        uses: actions/checkout@v4
-
-      - name: Checkout AndroidAPS upstream
-        uses: actions/checkout@v4
-        with:
-          repository: nightscout/AndroidAPS
-          path: AndroidAPS_upstream
+      - uses: actions/checkout@v4
 
       - name: Signing on
         run: |
@@ -47,14 +44,14 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.KEY_BASE64 }}" > androidaps.keystore.base64
-          base64 -d androidaps.keystore.base64 > androidaps.keystore
-          rm androidaps.keystore.base64
-          # Copy keystore to the upstream repo
-          cp androidaps.keystore AndroidAPS_upstream/androidaps.keystore
+          echo "${{ secrets.KEY_BASE64 }}" > $GITHUB_WORKSPACE/androidaps.keystore.base64
+          base64 -d $GITHUB_WORKSPACE/androidaps.keystore.base64 > $GITHUB_WORKSPACE/androidaps.keystore
+          rm $GITHUB_WORKSPACE/androidaps.keystore.base64
+          echo "Keystore location: $GITHUB_WORKSPACE/androidaps.keystore"
+          ls -l $GITHUB_WORKSPACE/androidaps.keystore
 
       - name: Grant execute permission for gradlew
-        run: chmod +x AndroidAPS_upstream/gradlew
+        run: chmod +x gradlew
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -67,65 +64,34 @@ jobs:
           echo "SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD != '' && '✓' || '✗' }}"
           echo "SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD != '' && '✓' || '✗' }}"
 
-      - name: Patch build.gradle for Signing
-        run: |
-          cd AndroidAPS_upstream
-          # Create a temporary file with the signing configuration
-          cat > signing_config.gradle << 'EOF'
-          android {
-              signingConfigs {
-                  release {
-                      storeFile file("$GITHUB_WORKSPACE/AndroidAPS_upstream/androidaps.keystore")
-                      storePassword "${{ secrets.SIGNING_STORE_PASSWORD }}"
-                      keyAlias "${{ secrets.SIGNING_KEY_ALIAS }}"
-                      keyPassword "${{ secrets.SIGNING_KEY_PASSWORD }}"
-                  }
-              }
-              buildTypes {
-                  release {
-                      signingConfig signingConfigs.release
-                  }
-              }
-          }
-          EOF
-
-          # Apply the signing configuration
-          sed -i '/android {/r signing_config.gradle' app/build.gradle
-          rm signing_config.gradle
-
       - name: Build Release APK
         run: |
-          cd AndroidAPS_upstream
           ./gradlew assembleRelease --stacktrace --info
+        env:
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
 
-      - name: Verify Keystore
-        run: |
-          ls -la AndroidAPS_upstream/androidaps.keystore
-          file AndroidAPS_upstream/androidaps.keystore
-
-      - name: Print Gradle Properties
-        run: |
-          cd AndroidAPS_upstream
-          ./gradlew properties | grep "signing"
-
-      - name: Run Signing Report
-        run: |
-          cd AndroidAPS_upstream
-          ./gradlew signingReport
+      # - name: Generate APK SHA-256
+      #   run: |
+      #     echo "APK hash:"
+      #     sha256sum app/build/outputs/apk/full/release/app-full-release.apk
 
       - name: Debug Build Output
         run: |
           echo "Current directory:"
           pwd
           echo "Listing build outputs:"
-          ls -R AndroidAPS_upstream/app/build/outputs/
+          ls -R app/build/outputs/
+          echo "Listing app directory:"
+          ls -R app/
 
       - name: Upload Artifact
         id: upload-artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: AndroidAPS_upstream/app/build/outputs/apk/full/release/app-full-release.apk
+          path: app/build/outputs/apk/full/release/app-full-release.apk
 
       - name: Signing off
         run: |
