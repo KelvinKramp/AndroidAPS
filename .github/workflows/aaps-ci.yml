@@ -24,12 +24,6 @@ jobs:
     name: Build AAPS
     runs-on: ubuntu-latest
     steps:
-      - name: Clone original AndroidAPS repo at tag 3.4.0.0
-        run: |
-          git clone https://github.com/nightscout/AndroidAPS.git source
-          cd source
-          git fetch --tags --force
-          git checkout 3.4.0.0
       - name: Decode Secrets Keystore Set and Oauth2 to Env
         run: |
           if [ -n "${{ secrets.KEYSTORE_SET }}" ]; then
